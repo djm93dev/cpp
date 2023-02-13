@@ -9,7 +9,7 @@ using namespace std::chrono;
 int main()
 {
 
-    
+
     // starting time
     auto old = steady_clock::now();
     // end line test
@@ -24,8 +24,6 @@ int main()
     std::cout << dur.count() << std::endl;
 
 
-
-
     // new line test
     for(int i = 0; i < 1,000,000; ++i)
     {
@@ -38,6 +36,40 @@ int main()
     // difference between starting and ending time
     auto dur2 = steady_clock::now() - old2;
     std::cout << dur2.count() << std::endl;
+
+
+
+    // test push back vector vs. insert vector
+    std::vector<int> v;
+    // starting time
+    auto old3 = steady_clock::now();
+    // push back test
+    for(int i = 0; i < 1,000,000; ++i)
+    {
+        v.push_back(i);
+    }
+
+    // ending time
+    auto duration3 = steady_clock::now() - old3;
+    // difference between starting and ending time
+    auto dur3 = steady_clock::now() - old3;
+    std::cout << "push back: " << dur3.count() << std::endl;
+
+    // starting time
+    auto old4 = steady_clock::now();
+    // insert test
+    for(int i = 0; i < 1,000,000; ++i)
+    {
+        v.insert(v.begin(), i);
+    }
+    // ending time
+    auto duration4 = steady_clock::now() - old4;
+    // difference between starting and ending time
+    auto dur4 = steady_clock::now() - old4;
+    std::cout << "insert: " << dur4.count() << std::endl;
+
+
+
 
 
 
