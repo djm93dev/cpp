@@ -70,7 +70,37 @@ int main()
 
 
 
+    // test copy vector vs. move vector
+    std::vector<int> v2;
+    // starting time
+    auto old5 = steady_clock::now();
+    // copy test
+    for(int i = 0; i < 1,000,000; ++i)
+    {
+        std::vector<int> v3 = v2;
+    }
+    // ending time
+    auto duration5 = steady_clock::now() - old5;
 
+    // difference between starting and ending time
+    auto dur5 = steady_clock::now() - old5;
+    std::cout << "copy: " << dur5.count() << std::endl;
+
+    // starting time
+    auto old6 = steady_clock::now();
+    // move test
+    for(int i = 0; i < 1,000,000; ++i)
+    {
+        std::vector<int> v4 = std::move(v2);
+    }
+    // ending time
+    auto duration6 = steady_clock::now() - old6;
+    // difference between starting and ending time
+    auto dur6 = steady_clock::now() - old6;
+    std::cout << "move: " << dur6.count() << std::endl;
+
+
+    
 
 
 
