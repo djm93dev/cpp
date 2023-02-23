@@ -12,15 +12,15 @@ Perceptron::Perceptron(int inputs, double bias){
 	generate(weights.begin(),weights.end(),frand);
 }
 
-// Run the perceptron. x is a std::vector with the input values.
-double Perceptron::run(std::vector<double> x){
+// Run the perceptron. x is a vector with the input values.
+double Perceptron::run(vector<double> x){
 	x.push_back(bias);
 	double sum = inner_product(x.begin(),x.end(),weights.begin(),(double)0.0);
 	return sigmoid(sum);
 }
 
-// Set the weights. w_init is a std::vector with the weights.
-void Perceptron::set_weights(std::vector<double> w_init){
+// Set the weights. w_init is a vector with the weights.
+void Perceptron::set_weights(vector<double> w_init){
 	weights = w_init;
 }
 
@@ -31,14 +31,15 @@ double Perceptron::sigmoid(double x){
 
 
 // Return a new MultiLayerPerceptron object with the specified parameters.
-MultiLayerPerceptron::MultiLayerPerceptron(std::vector<int> layers, double bias, double eta) {
+MultiLayerPerceptron::MultiLayerPerceptron(vector<int> layers, double bias, double eta) {
     this->layers = layers;
     this->bias = bias;
     this->eta = eta;
 
     for (int i = 0; i < layers.size(); i++){
-        values.push_back(std::vector<double>(layers[i],0.0));
-        network.push_back(std::vector<Perceptron>());
+        values.push_back(vector<double>(layers[i],0.0));
+        d.push_back(vector<double>(layers[i],0.0));
+        network.push_back(vector<Perceptron>());
         if (i > 0)   //network[0] is the input layer,so it has no neurons
             for (int j = 0; j < layers[i]; j++)
                 network[i].push_back(Perceptron(layers[i-1], bias));
@@ -46,28 +47,28 @@ MultiLayerPerceptron::MultiLayerPerceptron(std::vector<int> layers, double bias,
 }
 
 
-// Set the weights. w_init is a std::vector of std::vectors of std::vectors with the weights for all but the input layer.
-void MultiLayerPerceptron::set_weights(std::vector<std::vector<std::vector<double> > > w_init) {
+// Set the weights. w_init is a vector of vectors of vectors with the weights for all but the input layer.
+void MultiLayerPerceptron::set_weights(vector<vector<vector<double> > > w_init) {
     for (int i = 0; i< w_init.size(); i++)
         for (int j = 0; j < w_init[i].size(); j++)
             network[i+1][j].set_weights(w_init[i][j]);
 }
 
 void MultiLayerPerceptron::print_weights() {
-    std::cout << std::endl;
+    cout << endl;
     for (int i = 1; i < network.size(); i++){
         for (int j = 0; j < layers[i]; j++) {
-            std::cout << "Layer " << i+1 << " Neuron " << j << ": ";
+            cout << "Layer " << i+1 << " Neuron " << j << ": ";
             for (auto &it: network[i][j].weights)
-                std::cout << it <<"   ";
-            std::cout << std::endl;
+                cout << it <<"   ";
+            cout << endl;
         }
     }
-    std::cout << std::endl;
+    cout << endl;
 }
 
 // Feed a sample x into the MultiLayer Perceptron.
-std::vector<double> MultiLayerPerceptron::run(std::vector<double> x) {
+vector<double> MultiLayerPerceptron::run(vector<double> x) {
     values[0] = x;
     for (int i = 1; i < network.size(); i++)
         for (int j = 0; j < layers[i]; j++)
@@ -75,40 +76,46 @@ std::vector<double> MultiLayerPerceptron::run(std::vector<double> x) {
     return values.back();
 }
 
-int main() {
-    srand(time(NULL));
-    rand();
+// Run a single (x,y) pair with the backpropagation algorithm.
+double MultiLayerPerceptron::bp(vector<double> x, vector<double> y){
+    
+    // Backpropagation Step by Step:
+    
+    // STEP 1: Feed a sample to the network
+    vector<double> outputs = run(x);
+    
+    // STEP 2: Calculate the MSE
+    vector<double> error;
+    double MSE = 0.0;
+    for (int i = 0; i < y.size(); i++){
+        error.push_back(y[i] - outputs[i]);
+        MSE += error[i] * error[i];
+    }
+    MSE /= layers.back();
 
+    // STEP 3: Calculate the output error terms
+    for (int i = 0; i < outputs.size(); i++)
+        d.back()[i] = outputs[i] * (1 - outputs[i]) * (error[i]);
 
-    std::cout << "\n\n--------Logic Gate Example----------------\n\n";
-    Perceptron *p = new Perceptron(2);
-
-    //{10,10,-15} #AND
-    //{15,15,-10}  #OR
-    //{-15,-15,10}  #NOR
-    //{-10,-10,15} #NAND
-
-    p->set_weights({15,15,-10});
-
-    std::cout << "Gate: "<<std::endl;
-    std::cout<<p->run({0,0})<<std::endl;
-    std::cout<<p->run({0,1})<<std::endl;
-    std::cout<<p->run({1,0})<<std::endl;
-    std::cout<<p->run({1,1})<<std::endl;
-
-    std::cout<<"\n\n--------Hardcoded XOR Example----------------\n\n";
-    MultiLayerPerceptron mlp = MultiLayerPerceptron({2,2,1});  //mlp
-    mlp.set_weights({{{-10,-10,15},{15,15,-10}}, {{10,10,-15}}});
-    std::cout << "Hard-coded weights:\n";
-    mlp.print_weights();
-
-    std::cout<<"XOR:"<<std::endl;
-    std::cout<<"0 0 = "<<mlp.run({0,0})[0]<<std::endl;
-    std::cout<<"0 1 = "<<mlp.run({0,1})[0]<<std::endl;
-    std::cout<<"1 0 = "<<mlp.run({1,0})[0]<<std::endl;
-    std::cout<<"1 1 = "<<mlp.run({1,1})[0]<<std::endl;
-
-
+    // STEP 4: Calculate the error term of each unit on each layer    
+    for (int i = network.size()-2; i > 0; i--)
+        for (int h = 0; h < network[i].size(); h++){
+            double fwd_error = 0.0;
+            for (int k = 0; k < layers[i+1]; k++)
+                fwd_error += network[i+1][k].weights[h] * d[i+1][k];
+            d[i][h] = values[i][h] * (1-values[i][h]) * fwd_error;
+        }
+    
+    // STEPS 5 & 6: Calculate the deltas and update the weights
+    for (int i = 1; i < network.size(); i++)
+        for (int j = 0; j < layers[i]; j++)
+            for (int k = 0; k < layers[i-1]+1; k++){
+                double delta;
+                if (k==layers[i-1])
+                    delta = eta * d[i][j] * bias;
+                else
+                    delta = eta * d[i][j] * values[i-1][k];
+                network[i][j].weights[k] += delta;
+            }
+    return MSE;
 }
-
-
