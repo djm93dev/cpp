@@ -11,7 +11,6 @@ public:
         int j = num2.size() - 1;
         int carry = 0;
         string result = "";
-
         while (i >= 0 || j >= 0 || carry == 1)
         {
             int sum = carry;
