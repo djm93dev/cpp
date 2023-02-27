@@ -7,18 +7,21 @@ using namespace std;
 class Solution {
 public:
     int thirdMax(vector<int>& nums) {
+        sort(nums.rbegin(), nums.rend()); // sort the array
         int count = 0;
         int max = nums[0];
-        sort(nums.rbegin(), nums.rend()); // sort the array
-        for (int i = 0; i < nums.size(); i++) { // traverse the array
-            if (nums[i] != nums[i + 1]) // if the number is not equal to the next number, then increment count
+        for (int i = 1; i < nums.size(); i++) {
+            if (nums[i] != max) {
                 count++;
-            if (count == 3) // if count is equal to 3, then return the number
-                return nums[i];
+                max = nums[i];
+            }
+            if (count == 2)
+                return max;
         }
-        return nums[0]; // return the first number
+        return nums[0];
     }
 };
+
 
 int main()
 {
