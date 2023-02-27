@@ -19,9 +19,6 @@ public:
         else if (s[0] != ' ') // if the first character is not a space, then increment ans
             ans++;
         return ans;
-
-            
-        
     }
 };
 
