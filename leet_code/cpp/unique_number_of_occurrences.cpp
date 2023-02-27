@@ -9,22 +9,18 @@ using namespace std;
 class Solution {
 public:
     bool uniqueOccurrences(vector<int>& arr) {
-        map<int, int> m;
-        for (int i = 0; i < arr.size(); i++)
-            m[arr[i]]++;
-        vector<int> v;
-        for (auto it = m.begin(); it != m.end(); it++)
-            v.push_back(it->second);
-        sort(v.begin(), v.end());
-        for (int i = 0; i < v.size() - 1; i++) {
-            if (v[i] == v[i + 1])
-                return false;
+        map<int, int> m; // key: number, value: count
+        for (int i = 0; i < arr.size(); i++) // count the number of occurrences
+            m[arr[i]]++; // if the key is not in the map, it will be added
+        vector<int> v; // store the number of occurrences
+        for (auto it = m.begin(); it != m.end(); it++) // traverse the map
+            v.push_back(it->second); // store the number of occurrences
+        sort(v.begin(), v.end()); // sort the vector
+        for (int i = 0; i < v.size() - 1; i++) { // check if there are duplicates
+            if (v[i] == v[i + 1]) // if there are duplicates
+                return false; // return false
         }
-        cout << "v: ";
-        for (auto i : v)
-            cout << i << " ";
-        cout << endl;
-        return true;
+        return true; // return true
         
     }
 };
